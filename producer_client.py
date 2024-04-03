@@ -18,8 +18,8 @@ producer = Producer({
     'bootstrap.servers': 'pkc-w8nyg.me-central1.gcp.confluent.cloud:9092',
     'sasl.mechanisms': 'PLAIN',
     'security.protocol': 'SASL_SSL',
-    'sasl.username': '"{}"'.format(confluent_api_key),
-    'sasl.password': '"{}"'.format(confluent_api_secret_key),
+    'sasl.username': '{}'.format(confluent_api_key),
+    'sasl.password': '{}'.format(confluent_api_secret_key),
 })
 
 # Try publishing a simple message to the poems topic as a test
