@@ -11,6 +11,7 @@ load_dotenv()
 confluent_api_key = os.environ.get("CONFLUENT_CLUSTER_API_KEY")
 confluent_api_secret_key = os.environ.get("CONFLUENT_CLUSTER_API_SECRET_KEY")
 
+
 # Initialize Kafka producer...
 # ... as defined in https://docs.confluent.io/kafka-clients/python/current/overview.html
 producer = Producer({
@@ -20,4 +21,11 @@ producer = Producer({
     'sasl.username': '"{}"'.format(confluent_api_key),
     'sasl.password': '"{}"'.format(confluent_api_secret_key),
 })
+
+# Try publishing a simple message to the poems topic as a test
+try:
+    producer.produce('poems', value="First message sent from python producer client application")
+    producer.flush()
+except Exception as e:
+    print(e)
 
