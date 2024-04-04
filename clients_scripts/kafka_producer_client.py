@@ -37,11 +37,11 @@ def fetch_and_produce_stock_price(symbol):
     try:
         stock = yf.Ticker(symbol)
         all_stock_info_json = stock.info
-        with open("msft_stock.json", "w") as stocks_file:
+        with open("./datafiles/msft_stock.json", "w") as stocks_file:
             json.dump(all_stock_info_json, stocks_file)
 
         price_5days = stock.history(period='5d')
-        with open("msft_stock_5d.csv", "w") as stocks_file_5d:
+        with open("./datafiles/msft_stock_5d.csv", "w") as stocks_file_5d:
             price_5days.to_csv(stocks_file_5d)
 
         price = stock.history(period='5d')['Close'].iloc[-1]
