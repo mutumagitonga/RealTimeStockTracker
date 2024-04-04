@@ -1,3 +1,4 @@
 confluent-kafka
 yfinance
 python-dotenv
+pandas
