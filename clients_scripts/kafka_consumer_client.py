@@ -1,5 +1,7 @@
 import os
-from confluent_kafka import Consumer
+import sys
+import signal
+from confluent_kafka import Consumer, KafkaError, KafkaException
 from dotenv import load_dotenv
 
 # Load the .env file here
@@ -21,3 +23,30 @@ consumer = Consumer({
     'auto.offset.reset': 'earliest'
 })
 
+# Basic message consumption test
+running = True
+
+
+def basic_consume_test(consumer_client, topics):
+    try:
+        consumer_client.subscribe(topics)
+        while running:
+            msg = consumer_client.poll(timeout=2.0)
+            if msg is None: 
+                continue
+            if msg.error():
+                if msg.error().code() == KafkaError._PARTITION_EOF:
+                    # End of partition event
+                    sys.stderr.write('%% %s [%d] reached end at offset %d\n' %
+                                     (msg.topic(), msg.partition(), msg.offset()))
+                elif msg.error():
+                    raise KafkaException(msg.error())
+            else:
+                value = msg.value().decode('utf-8')
+                print(value)
+    finally:
+        # Close down consumer to commit final offsets.
+        consumer_client.close()
+
+
+basic_consume_test(consumer, ['poems'])
