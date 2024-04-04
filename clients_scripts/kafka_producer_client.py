@@ -24,7 +24,8 @@ producer = Producer({
 
 # Try publishing a simple message to the poems topic as a test
 try:
-    producer.produce('poems', value="First message sent from python producer client application")
+    # producer.produce('poems', value="First message sent from python producer client application")
+    producer.produce('poems', key="12", value="Another message sent from python client with key")
     producer.flush()
 except Exception as e:
     print(e)
