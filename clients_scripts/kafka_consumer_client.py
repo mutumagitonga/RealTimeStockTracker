@@ -17,8 +17,8 @@ consumer = Consumer({
     'bootstrap.servers': 'pkc-w8nyg.me-central1.gcp.confluent.cloud:9092',
     'security.protocol': 'SASL_SSL',
     'sasl.mechanisms': 'PLAIN',
-    'sasl.username': 'AM4S2AAL2PRP74TB',
-    'sasl.password': 'N6mFpXJ5GPybcwICRK/ex4dUorcKi6+M3lHBFlMpYdoPhh/CjGbQH87k23EzmBws',
+    'sasl.username': '{}'.format(confluent_api_key),
+    'sasl.password': '{}'.format(confluent_api_secret_key),
     'group.id': 'stock_price_group_test_1',
     'auto.offset.reset': 'earliest'
 })
