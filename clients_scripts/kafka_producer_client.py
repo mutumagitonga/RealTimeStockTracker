@@ -1,10 +1,14 @@
 import json
 import os
 import pandas as pd
+import logging
 
 import yfinance as yf
 from confluent_kafka import Producer
 from dotenv import load_dotenv
+
+# Configure logging module specifically for this module
+logger = logging.getLogger(__name__)
 
 # Load the API key & API secret from the .env file using load_dotenv() method
 load_dotenv()
@@ -13,50 +17,57 @@ load_dotenv()
 confluent_api_key = os.environ.get("CONFLUENT_CLUSTER_API_KEY")
 confluent_api_secret_key = os.environ.get("CONFLUENT_CLUSTER_API_SECRET_KEY")
 
-
-# Initialize Kafka producer...
-# ... as defined in https://docs.confluent.io/kafka-clients/python/current/overview.html
-producer = Producer({
+# Define producer configuration
+producer_config = {
     'bootstrap.servers': 'pkc-w8nyg.me-central1.gcp.confluent.cloud:9092',
     'sasl.mechanisms': 'PLAIN',
     'security.protocol': 'SASL_SSL',
     'sasl.username': '{}'.format(confluent_api_key),
     'sasl.password': '{}'.format(confluent_api_secret_key),
-})
-
-# # Try publishing a simple message to the poems topic as a test
-# try:
-#     # producer.produce('poems', value="First message sent from python producer client application")
-#     producer.produce('poems', key="12", value="Another message sent from python client with key")
-#     producer.flush()
-# except Exception as e:
-#     print(e)
+}
+# Initialize Kafka producer client...
+# ... as defined in https://docs.confluent.io/kafka-clients/python/current/overview.html
+producer = Producer(producer_config)
 
 
-def fetch_and_produce_stock_price(symbol):
-    try:
-        stock = yf.Ticker(symbol)
-        all_stock_info_json = stock.info
-        with open("./datafiles/msft_stock.json", "w") as stocks_file:
-            json.dump(all_stock_info_json, stocks_file)
+def get_stock_info(symbol):
+    # Fetch ticker info
+    ticker_info = yf.download(symbol, period='1d')
+    # print(f'{symbol}: \n{ticker_info}')
+    # print(type(ticker_info))
+    with open("./datafiles/test_parent.csv", "w") as test_parent:
+        ticker_info.to_csv(test_parent)
 
-        price_5days = stock.history(period='5d')
-        with open("./datafiles/msft_stock_5d.csv", "w") as stocks_file_5d:
-            price_5days.to_csv(stocks_file_5d)
+    df = pd.read_csv('./datafiles/test_parent.csv')
+    # print(f"Date: {df['Date'][0]} Type: {type(df.Date)}")
+    # print(f"Price: {df['Close'][0]} Type: {type(df.Close)}")
+    date = df['Date'][0]
+    price = df['Close'][0]
 
-        price = stock.history(period='5d')['Close'].iloc[-1]
-        message = f'{symbol}:{float(f"{price:.2f}")}'  # Combine symbol and price
-        print(message)
-
-        df = pd.read_csv("msft_stock_5d.csv")
-        date = df['Date'].iloc[-1].split(" ", 1)[0]
-        print(date)
-
-        producer.produce('stocks', key=date, value=message)
-        producer.flush()  # Ensure the message is sent immediately
-        print(f'Sent {date} ticker:price(message): {message}')
-    except Exception as e:
-        print(f'Error sending data: {e}')
+    return date, price
 
 
-fetch_and_produce_stock_price('MSFT')
+def kafka_producer_run(symbols, topic):
+    i = 0
+    while i <= 3:
+        for sym in symbols:
+            # MULTIPLE TICKERS DOWNLOAD
+            date, price = get_stock_info(sym)
+
+            if price is not None:
+                # Format message in JSON
+                message = {'symbol': sym, 'date': date, 'price': price}
+                # Send message to kafka
+                try:
+                    producer.produce(topic, key=sym, value=json.dumps(message))
+                    producer.flush()
+                    logger.info(f'Sent: {message}')
+                except Exception as e:
+                    logger.error(f'Error: {e}')
+        i += 1
+
+
+if __name__ == "__main__":
+    stock_tickers = ['MSFT', 'GOOGL', 'AMZN', 'TSLA']
+    kafka_topic = 'poems'
+    kafka_producer_run(stock_tickers, kafka_topic)
