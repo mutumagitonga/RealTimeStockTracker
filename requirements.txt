@@ -2,3 +2,6 @@ confluent-kafka
 yfinance
 python-dotenv
 pandas
+redis
+fastapi
+uvicorn
