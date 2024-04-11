@@ -31,43 +31,50 @@ producer = Producer(producer_config)
 
 
 def get_stock_info(symbol):
-    # Fetch ticker info
-    ticker_info = yf.download(symbol, period='1d')
-    # print(f'{symbol}: \n{ticker_info}')
-    # print(type(ticker_info))
-    with open("./datafiles/test_parent.csv", "w") as test_parent:
-        ticker_info.to_csv(test_parent)
+    try:
+        # Fetch ticker info
+        ticker_info = yf.download(symbol, period='1d')
+        # print(f'{symbol}: \n{ticker_info}')
+        # print(type(ticker_info))
+        with open("./datafiles/test_parent.csv", "w") as test_parent:
+            ticker_info.to_csv(test_parent)
 
-    df = pd.read_csv('./datafiles/test_parent.csv')
-    # print(f"Date: {df['Date'][0]} Type: {type(df.Date)}")
-    # print(f"Price: {df['Close'][0]} Type: {type(df.Close)}")
-    date = df['Date'][0]
-    price = df['Close'][0]
+        df = pd.read_csv('./datafiles/test_parent.csv')
+        # print(f"Date: {df['Date'][0]} Type: {type(df.Date)}")
+        # print(f"Price: {df['Close'][0]} Type: {type(df.Close)}")
+        date = df['Date'][0]
+        price = df['Close'][0]
 
-    return date, price
+        return date, price
+    except Exception as e:
+        logger.error(f'Unsuccessful: {e}')
 
 
 def kafka_producer_run(symbols, topic):
     i = 0
-    while i <= 3:
+    while True:
         for sym in symbols:
             # MULTIPLE TICKERS DOWNLOAD
-            date, price = get_stock_info(sym)
+            try:
+                date, price = get_stock_info(sym)
 
-            if price is not None:
-                # Format message in JSON
-                message = {'symbol': sym, 'date': date, 'price': price}
-                # Send message to kafka
-                try:
-                    producer.produce(topic, key=sym, value=json.dumps(message))
-                    producer.flush()
-                    logger.info(f'Sent: {message}')
-                except Exception as e:
-                    logger.error(f'Error: {e}')
+                if price is not None:
+                    # Format message in JSON
+                    message = {'symbol': sym, 'date': date, 'price': price}
+                    # Send message to kafka
+                    try:
+                        producer.produce(topic, key=sym, value=json.dumps(message))
+                        producer.flush()
+                        logger.info(f'Sent: {message}')
+                    except Exception as e:
+                        logger.error(f'Error: {e}')
+            except TypeError:
+                logger.error(f'No stock information available for {sym}')
         i += 1
 
 
 if __name__ == "__main__":
-    stock_tickers = ['MSFT', 'GOOGL', 'AMZN', 'TSLA']
+    # stock_tickers = ['MSFT', 'GOOGL', 'AMZN', 'TSLA']
+    stock_tickers = ['CSCO', 'WMT', 'PANW', 'TM']
     kafka_topic = 'poems'
     kafka_producer_run(stock_tickers, kafka_topic)
