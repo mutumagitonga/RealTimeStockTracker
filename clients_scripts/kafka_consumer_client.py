@@ -17,7 +17,6 @@ redis_client = redis.Redis(host='localhost', port=6379)
 
 
 def kafka_consumer_run():
-
     # Load the .env file here
     load_dotenv()
 
@@ -53,7 +52,7 @@ def kafka_consumer_run():
                 if msg.error().code() == KafkaError._PARTITION_EOF:
                     # End of partition event
                     logging.error('%% %s [%d] reached end at offset %d\n' %
-                                 (msg.topic(), msg.partition(), msg.offset()))
+                                  (msg.topic(), msg.partition(), msg.offset()))
                 elif msg.error():
                     raise KafkaException(msg.error())
             else:
