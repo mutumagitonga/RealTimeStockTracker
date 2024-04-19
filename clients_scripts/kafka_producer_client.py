@@ -1,5 +1,7 @@
 import json
 import os
+import time
+
 import pandas as pd
 import logging
 
@@ -71,6 +73,7 @@ def kafka_producer_run(symbols, topic):
             except TypeError:
                 logger.error(f'No stock information available for {sym}')
         i += 1
+        time.sleep(20)
 
 
 if __name__ == "__main__":
