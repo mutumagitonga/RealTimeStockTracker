@@ -6,3 +6,6 @@ redis
 fastapi
 uvicorn
 jupyter
+dash
+dash-bootstrap-components
+plotly-express
