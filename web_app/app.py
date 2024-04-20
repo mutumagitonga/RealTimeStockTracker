@@ -29,6 +29,10 @@ stock_monitor = OrderedDict()  # Declare an ordered dictionary (maintains order 
 def live_graph_update(interval):
     # Read published messages from Redis list
     fetched_data = redis_client.lrange('stock_monitor', 0, -1)
+    all_tickers_dates_n_prices = {'WMT': {'date': ['2024-04-18', '2024-04-19', '2024-04-20'], 
+                                          'price': [145.23, 146.05, 144.78]}, 
+                                  'NVDA': {'date': ['2024-04-01', '2024-04-30','2024-04-11'], 
+                                           'price': [330.80, 328.45, 329.60]}}
     for msg in fetched_data:
         stock_monitor[msg['symbol']] = (msg['date'], round(msg['price'], 2))  # Tuple: dates & prices to stock tickers
 
@@ -39,6 +43,7 @@ def live_graph_update(interval):
         # sorted_tickers = stock_monitor.keys()  # Sort the keys
         # sorted_dates = [stock_monitor[symbol][0] for symbol in sorted_tickers]
         # sorted_prices = [stock_monitor[symbol][1] for symbol in sorted_tickers]  # List of values for current ticker
+        
 
 
 
