@@ -4,3 +4,4 @@ my_env
 **/*lock*
 datafiles/
 .venv
+venv/
