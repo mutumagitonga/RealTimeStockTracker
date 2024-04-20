@@ -19,8 +19,7 @@ app.layout = html.Div(
     ]
 )
 
-stock_monitor = OrderedDict()  # Declare an ordered dictionary (maintains order items were added)
-
+stock_monitor = OrderedDict()
 
 @app.callback(
     Output('stock-track', 'figure'),
@@ -34,23 +33,35 @@ def live_graph_update(interval):
                                   'NVDA': {'date': ['2024-04-01', '2024-04-30','2024-04-11'], 
                                            'price': [330.80, 328.45, 329.60]}}
     for msg in fetched_data:
-        stock_monitor[msg['symbol']] = (msg['date'], round(msg['price'], 2))  # Tuple: dates & prices to stock tickers
-
-        # Since it's streaming from known recurring symbols & data, current values are used
+        stock_monitor[msg['symbol']] = (msg['date'], round(msg['price'], 2))  
         current_ticker = msg['symbol']
         current_date = stock_monitor[current_ticker][0]
         current_price = stock_monitor[current_ticker][1]
-        # sorted_tickers = stock_monitor.keys()  # Sort the keys
-        # sorted_dates = [stock_monitor[symbol][0] for symbol in sorted_tickers]
-        # sorted_prices = [stock_monitor[symbol][1] for symbol in sorted_tickers]  # List of values for current ticker
         
-
-
-
-        fig = px.scatter(x=current_date, y=current_price,
-                         size="pop", color=, title=str(value),
-                         hover_name="country", log_x=True, size_max=60).update_layout(showlegend=True, title_x=0.5)
-
+        all_tickers_dates_n_prices[current_ticker]['date'].append(current_date)
+        all_tickers_dates_n_prices[current_ticker]['price'].append(current_price)
+        
+    fig = px.line()
+    
+    for ticker, data in all_tickers_dates_n_prices.items():
+        fig.add_trace(
+            x=data['date'], y=data['price'], mode='lines', name=ticker, 
+            hoverinfo='y+name', hovertemplate='<b>%{y}</b><br>%{name}'
+        )
+    
+    # Adjusting y-axis scale to accommodate large variance in prices
+    fig.update_yaxes(type="log")
+    
+    # Other parameters
+    fig.update_layout(
+        title="Stock Prices Over Time",
+        title_x=0.5,  # Title position
+        showlegend=True,  # Show legend
+        hovermode="x"  # Show hover information only on x-axis
+    )
+    
+    return fig
+``
 
 
 if __name__ == "__main__":
