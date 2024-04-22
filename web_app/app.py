@@ -61,7 +61,6 @@ def live_graph_update(interval):
     )
     
     return fig
-``
 
 
 if __name__ == "__main__":
